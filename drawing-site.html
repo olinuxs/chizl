@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Draw - Free Drawing Studio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8eef7 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1.2rem 2rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -1px;
+        }
+
+        .header-info {
+            font-size: 0.85rem;
+            color: #666;
+            font-weight: 300;
+        }
+
+        .container {
+            display: flex;
+            flex: 1;
+            gap: 1.5rem;
+            padding: 1.5rem;
+        }
+
+        .toolbar {
+            width: 100px;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 16px;
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+            backdrop-filter: blur(10px);
+        }
+
+        .tool-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .tool-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #999;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.25rem;
+        }
+
+        button {
+            background: #f0f2f5;
+            border: none;
+            padding: 0.8rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:hover {
+            background: #e8eaed;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        button.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+        }
+
+        .color-picker-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        #colorPicker {
+            width: 100%;
+            height: 50px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        #colorPicker:hover {
+            transform: scale(1.05);
+        }
+
+        .slider-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            background: #e8eaed;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+            transition: transform 0.2s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+            transition: transform 0.2s;
+        }
+
+        .size-display {
+            font-size: 0.75rem;
+            color: #666;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .canvas-container {
+            flex: 1;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        canvas {
+            display: block;
+            cursor: crosshair;
+            background: white;
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .canvas-placeholder {
+            color: #ccc;
+            font-size: 1rem;
+            text-align: center;
+            font-weight: 300;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        button.download-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            flex: 1;
+        }
+
+        button.download-btn:hover {
+            background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .toolbar {
+                flex-direction: row;
+                width: 100%;
+                height: auto;
+                padding: 1rem;
+            }
+
+            .tool-group {
+                flex-direction: row;
+                flex: 1;
+            }
+
+            header {
+                flex-direction: column;
+                gap: 0.5rem;
+                text-align: center;
+            }
+        }
+
+        /* Animation for page load */
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .toolbar, .canvas-container {
+            animation: slideUp 0.6s ease-out;
+        }
+
+        .toolbar {
+            animation-delay: 0.1s;
+        }
+
+        .canvas-container {
+            animation-delay: 0.2s;
+        }
+
+        /* Ripple effect on button click */
+        button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        button:active::after {
+            animation: ripple 0.6s ease-out;
+        }
+
+        @keyframes ripple {
+            from {
+                width: 0;
+                height: 0;
+                opacity: 1;
+            }
+            to {
+                width: 100px;
+                height: 100px;
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">Draw</div>
+        <div class="header-info">✨ Free Drawing Studio • No Account • No Limits</div>
+    </header>
+
+    <div class="container">
+        <div class="toolbar">
+            <div class="tool-group">
+                <div class="tool-label">Tools</div>
+                <button id="drawBtn" class="active" title="Draw" onclick="setTool('draw')">✏️</button>
+                <button id="eraseBtn" title="Erase" onclick="setTool('erase')">🧹</button>
+                <button id="lineBtn" title="Line" onclick="setTool('line')">📏</button>
+            </div>
+
+            <div class="tool-group">
+                <div class="tool-label">Color</div>
+                <div class="color-picker-container">
+                    <input type="color" id="colorPicker" value="#000000">
+                </div>
+            </div>
+
+            <div class="tool-group">
+                <div class="tool-label">Size</div>
+                <div class="slider-container">
+                    <input type="range" id="brushSize" min="1" max="100" value="5">
+                    <div class="size-display"><span id="sizeValue">5</span>px</div>
+                </div>
+            </div>
+
+            <div class="tool-group">
+                <div class="tool-label">Opacity</div>
+                <div class="slider-container">
+                    <input type="range" id="opacity" min="0" max="100" value="100">
+                    <div class="size-display"><span id="opacityValue">100</span>%</div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button title="Undo" onclick="undo()">↶</button>
+                <button title="Clear Canvas" onclick="clearCanvas()" style="flex: 1;">🗑️</button>
+                <button class="download-btn" title="Download" onclick="downloadDrawing()">⬇️</button>
+            </div>
+        </div>
+
+        <div class="canvas-container">
+            <canvas id="drawingCanvas"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('drawingCanvas');
+        const ctx = canvas.getContext('2d');
+        const colorPicker = document.getElementById('colorPicker');
+        const brushSize = document.getElementById('brushSize');
+        const opacity = document.getElementById('opacity');
+        const sizeValue = document.getElementById('sizeValue');
+        const opacityValue = document.getElementById('opacityValue');
+
+        let isDrawing = false;
+        let currentTool = 'draw';
+        let lastX = 0;
+        let lastY = 0;
+        let history = [];
+        let historyStep = -1;
+
+        // Set canvas size
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth - 30;
+            canvas.height = container.clientHeight - 30;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+        }
+
+        // Save to history
+        function saveHistory() {
+            historyStep++;
+            if (historyStep < history.length) {
+                history.length = historyStep;
+            }
+            history.push(canvas.toDataURL());
+        }
+
+        // Undo
+        function undo() {
+            if (historyStep > 0) {
+                historyStep--;
+                const imgData = new Image();
+                imgData.src = history[historyStep];
+                imgData.onload = () => {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(imgData, 0, 0);
+                };
+            }
+        }
+
+        // Clear canvas
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            saveHistory();
+        }
+
+        // Download drawing
+        function downloadDrawing() {
+            const link = document.createElement('a');
+            link.href = canvas.toDataURL('image/png');
+            link.download = `drawing-${Date.now()}.png`;
+            link.click();
+        }
+
+        // Set tool
+        function setTool(tool) {
+            currentTool = tool;
+            document.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
+            if (tool === 'draw') document.getElementById('drawBtn').classList.add('active');
+            if (tool === 'erase') document.getElementById('eraseBtn').classList.add('active');
+            if (tool === 'line') document.getElementById('lineBtn').classList.add('active');
+        }
+
+        // Draw function
+        function draw(x, y) {
+            ctx.globalAlpha = opacity.value / 100;
+            ctx.strokeStyle = colorPicker.value;
+            ctx.lineWidth = brushSize.value;
+
+            if (currentTool === 'erase') {
+                ctx.clearRect(x - brushSize.value / 2, y - brushSize.value / 2, brushSize.value, brushSize.value);
+            } else if (currentTool === 'draw') {
+                ctx.beginPath();
+                ctx.moveTo(lastX, lastY);
+                ctx.lineTo(x, y);
+                ctx.stroke();
+            }
+
+            lastX = x;
+            lastY = y;
+        }
+
+        // Line drawing (temporary)
+        let lineStart = null;
+        let linePreview = null;
+
+        function drawLine(x, y, isPreview = false) {
+            if (!lineStart) return;
+
+            if (isPreview) {
+                const temp = canvas.toDataURL();
+                if (!linePreview) linePreview = temp;
+                const img = new Image();
+                img.src = linePreview;
+                img.onload = () => {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0);
+                    ctx.globalAlpha = opacity.value / 100;
+                    ctx.strokeStyle = colorPicker.value;
+                    ctx.lineWidth = brushSize.value;
+                    ctx.beginPath();
+                    ctx.moveTo(lineStart.x, lineStart.y);
+                    ctx.lineTo(x, y);
+                    ctx.stroke();
+                };
+            }
+        }
+
+        // Mouse events
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            lastX = e.clientX - rect.left;
+            lastY = e.clientY - rect.top;
+
+            if (currentTool === 'line') {
+                lineStart = { x: lastX, y: lastY };
+                linePreview = canvas.toDataURL();
+            } else {
+                isDrawing = true;
+                saveHistory();
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            if (currentTool === 'line' && lineStart) {
+                drawLine(x, y, true);
+            } else if (isDrawing) {
+                draw(x, y);
+            }
+        });
+
+        canvas.addEventListener('mouseup', (e) => {
+            if (currentTool === 'line' && lineStart) {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                ctx.globalAlpha = opacity.value / 100;
+                ctx.strokeStyle = colorPicker.value;
+                ctx.lineWidth = brushSize.value;
+                ctx.beginPath();
+                ctx.moveTo(lineStart.x, lineStart.y);
+                ctx.lineTo(x, y);
+                ctx.stroke();
+                lineStart = null;
+                linePreview = null;
+                saveHistory();
+            }
+            isDrawing = false;
+        });
+
+        canvas.addEventListener('mouseout', () => {
+            isDrawing = false;
+        });
+
+        // Touch support for mobile
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const touch = e.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            lastX = touch.clientX - rect.left;
+            lastY = touch.clientY - rect.top;
+            isDrawing = true;
+            saveHistory();
+        });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (!isDrawing) return;
+            const touch = e.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            const x = touch.clientX - rect.left;
+            const y = touch.clientY - rect.top;
+            draw(x, y);
+        });
+
+        canvas.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            isDrawing = false;
+        });
+
+        // Update size display
+        brushSize.addEventListener('input', () => {
+            sizeValue.textContent = brushSize.value;
+        });
+
+        opacity.addEventListener('input', () => {
+            opacityValue.textContent = opacity.value;
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', resizeCanvas);
+
+        // Initialize
+        resizeCanvas();
+        saveHistory();
+        ctx.globalAlpha = 1;
+    </script>
+</body>
+</html>
